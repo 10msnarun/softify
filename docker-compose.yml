@@ -1,18 +1,48 @@
 version: "3.9"
 
 services:
+  reverse-proxy:
+    image: nginx:alpine
+    container_name: reverse-proxy
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    networks:
+      - app-net
+
   api:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     env_file:
       - .env
     depends_on:
       - mongodb
+      - redis
     ports:
       - "8080:8080"
-    environment:
-      - MONGODB_URI=mongodb://root:example@mongodb:27017/bezkoder_db?authSource=admin
+    networks:
+      - app-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -21,20 +51,38 @@ services:
   mongodb:
     image: mongo:6
     restart: unless-stopped
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=example
-      - MONGO_INITDB_DATABASE=bezkoder_db
+    env_file:
+      - .env
     volumes:
       - mongo_data:/data/db
     ports:
       - "27017:27017"
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+    networks:
+      - app-net
+     healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 volumes:
   mongo_data:
+
+networks:
+  app-net:
+    driver: bridge
