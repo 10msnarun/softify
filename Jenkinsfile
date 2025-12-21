@@ -22,7 +22,7 @@ pipeline {
 
     stage('Deploy to App VM') {
       steps {
-        sshagent(credentials: ['app-ec2-ssh']) {
+        sshagent(credentials: ['ubuntu']) {
           sh '''
           ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
             cd /root/softify &&
