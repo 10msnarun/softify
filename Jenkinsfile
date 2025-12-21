@@ -20,19 +20,18 @@ pipeline {
     }
 
     stage('Deploy to App VM') {
-  steps {
-    sshagent(credentials: ['ubuntu']) {   // keep this ID if your SSH credential ID is really 'ubuntu'
-      sh '''
-      ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
-        cd /root/softify &&
-        git pull origin main &&
-        docker compose down &&
-        docker compose up --build -d
-      '
-      '''
+      steps {
+        sshagent(credentials: ['app-ec2-ssh']) {   // <-- use your real credential ID here
+          sh '''
+          ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
+            cd /root/softify &&
+            git pull origin main &&
+            docker compose down &&
+            docker compose up --build -d
+          '
+          '''
+        }
+      }
     }
-  }
-}
-
   }
 }
