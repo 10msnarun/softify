@@ -23,7 +23,7 @@ pipeline {
       steps {
         sshagent(credentials: ['app-ec2-ssh']) {   // <-- use your real credential ID here
           sh '''
-          ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
+          ssh -o StrictHostKeyChecking=no root@13.235.87.236 '
             cd /root/softify &&
             git pull origin main &&
             docker compose down &&
