@@ -1,7 +1,6 @@
 pipeline {
   agent any
 
-  
   stages {
     stage('Checkout') {
       steps {
@@ -22,10 +21,10 @@ pipeline {
 
     stage('Deploy to App VM') {
       steps {
-        sshagent(credentials: ['ubuntu']) {
+        sshagent(credentials: ['app-ec2-ssh']) {   // use your real SSH credential ID
           sh '''
           ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
-            cd /root/softify &&
+            cd /home/ubuntu/softify &&
             git pull origin main &&
             docker compose down &&
             docker compose up --build -d
