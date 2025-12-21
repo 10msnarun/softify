@@ -1,6 +1,7 @@
 pipeline {
   agent any
 
+  
   stages {
     stage('Checkout') {
       steps {
@@ -23,7 +24,7 @@ pipeline {
       steps {
         sshagent(credentials: ['app-ec2-ssh']) {
           sh '''
-          ssh -o StrictHostKeyChecking=no ubuntu@<APP_VM_PUBLIC_IP> '
+          ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236/ '
             cd /root/softify &&
             git pull origin main &&
             docker compose down &&
