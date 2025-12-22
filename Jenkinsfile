@@ -24,8 +24,9 @@ pipeline {
         sshagent(credentials: ['app-ec2-ssh']) {
           sh '''
           ssh -o StrictHostKeyChecking=no ubuntu@13.235.87.236 '
-            cd /home/ubuntu/softify &&
-            git pull origin main &&
+            cd /home/ubuntu/softify && 
+            git fetch origin main &&
+            git reset --hard origin/main &&            
             docker compose down &&
             docker compose up --build -d
           '
